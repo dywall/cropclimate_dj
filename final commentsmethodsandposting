@@ -1,0 +1,152 @@
+Data has been collected on the crop value in the state of Kansas, dating back to 1866 as the original unedited dataset. 
+The focus of my dataset is the change in this crop value over the last 30 years. This crop data was downloaded from the USDA Statistics Department.
+This is the link where the data was accessed: https://quickstats.nass.usda.gov/
+
+To get the crop data I needed off this link, I applied the following commodities to my data: 
+- Program: Survey
+- Sector: Crops
+- Group: Field Crops
+- Commodity: Corn
+- Category: Yield
+- Data Item: Corn, Grain - Yield, Measured in BU/Acre
+- Geographic Level: State, State: Kansas
+
+From there, I did the following code in an R notebook below :
+
+- Downloaded dplyr, lubridate and stringr packages along with importing USDA data
+- Selected Period and Value, and filtered for YEAR within that Period Column, getting rid of useless columns
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(dplyr)
+library(lubridate)
+library(stringr)
+finaldf1 <- read.csv('data/233B6EA2-8FBE-3F2C-99A1-F4CF354FD67F.csv', header=TRUE)
+```
+```{r}
+finaldf2 <- finaldf1 %>%
+select('Period','Value')
+```
+```{r}
+finaldf2 <- finaldf1 %>% 
+filter(Period=='YEAR')
+```
+With 'Period' and 'Value' both being selected I now plotted them on a graph, as seen below: 
+
+```{r finaldf2_plot}
+plot(finaldf2$Year, finaldf2$Value)
+```
+
+```{r}
+finaldf3 <- read.csv('data/234EE2BB-6CD0-3B1C-ACC9-0025E3AAAAF7.csv', header=TRUE)
+```
+
+In this next part of my notebook, I decided to further analyze my data. One of the big reasons crops produce under quarter expectations is
+weather a farmer has proper irrigation systems installed to aid his crops in times of drought. These systems hold water to keep crops 
+fertilized and help stimulate crop growth. Below is code I used to look at irrigated versus non-irrigated crop production for the state of
+Kansas to look the difference irrigation can make in crop production. Data was downloaded from the same website, with those two filters
+applied to each of them, creating two different graphs. First, my imports and code for the Irrigated graph.
+
+```{r}
+finaldf3 <- read.csv('data/234EE2BB-6CD0-3B1C-ACC9-0025E3AAAAF7.csv', header=TRUE)
+```
+
+I started below by creating a new dataframe with the filter of the irrigation data. From there I did two mutations, the first of which I
+created a new Value column (Value2), without the commas. In the next mutation I used it to clean my data by converting it from a string to
+a numeric data type. 
+```{r}
+finaldf4 <- finaldf3 %>% 
+filter(Data.Item=='CORN, GRAIN, IRRIGATED - PRODUCTION, MEASURED IN BU') %>%
+mutate(Value2 = str_remove_all(Value, ',')) %>%
+mutate(Value2 = as.numeric(Value2))
+```
+
+```{r}
+finaldf5 <- finaldf4 %>% 
+filter(Period=='YEAR')
+```
+
+This code chunk below created my Irrigated graph. 
+```{r finaldf5_plot}
+plot(finaldf5$Year, finaldf5$Value2)
+title('Irrigated')
+```
+
+Secondly, my code and needed imports below for my Non-Irrigated crop production.
+```{r}
+finaldf6 <- finaldf3 %>% 
+filter(Data.Item==unique(finaldf3$Data.Item)[2]) %>%
+mutate(Value2 = str_remove_all(Value, ',')) %>%
+mutate(Value2 = as.numeric(Value2))
+```
+
+```{r}
+finaldf7 <- finaldf6 %>% 
+filter(Period=='YEAR')
+```
+This code chunk below created my Non-Irrigated graph. 
+```{r finaldf6_plot}
+plot(finaldf7$Year, finaldf7$Value2)
+title('Non-Irrigated')
+```
+
+In the last part of my notebook I decided to download drought data from the United States drought monitor, filtering for the state of 
+Kansas from 2000-2018, the years in which I noticed production for both types of farms had some very low production rates. I found in my
+data that non-irrigated farms are far more susceptible to drought than irrigated farms. Although that is common knowledge the raw data 
+serves to amplify that statement. 
+
+I downloaded the drought data from here: https://droughtmonitor.unl.edu/DmData/DataDownload/DSCI.aspx
+
+```{r}
+df_droughtdata <- read.csv('data/dm_export_20000101_20181231.csv', header=TRUE)
+```
+
+```{r summary_noaa}
+summary(df_droughtdata)
+```
+```{r date_column}
+df_droughtdata2 <- df_droughtdata %>%
+  mutate(MapDate2=as.character(MapDate)) %>%
+mutate(MapDate3 = as.Date(x = MapDate2, format = "%Y%m%d"))
+```
+```{r summary_noaa_2}
+summary(df_droughtdata2)
+```
+```{r add_year_column}
+df_droughtdata3 <- df_droughtdata2 |>
+  mutate(YEAR = year(MapDate3))
+```
+```{r groupbyyear_column}
+df_droughtdata4 <- df_droughtdata3 |>
+group_by(YEAR) |>
+summarise(Average = mean(DSCI))
+```
+```{r plot_averagedsci}
+plot(x = df_droughtdata4$YEAR, y = df_droughtdata4$Average, type = 'l')
+title('Drought Average Data per Year')
+```
+```{r graphic}
+write.csv(df_droughtdata4, 'Drought Average Data per Year.csv',row.names = FALSE)
+```
+
+In the code below I joined my irrigated and non irrigated data to be able to compare the data better side by side. 
+
+```{r joined graphic}
+joinedirrigated_nonirrigated<-full_join(finaldf5,finaldf7) %>%
+  select(Year, Data.Item, Value2) %>%
+  mutate(Data.Item2=case_when(Data.Item == 'CORN, GRAIN, IRRIGATED - PRODUCTION, MEASURED IN BU' ~ 'IRRIGATED',
+                              Data.Item == 'CORN, GRAIN, NON-IRRIGATED - PRODUCTION, MEASURED IN BU' ~ 'NON-IRRIGATED'))
+```
+```{r joined graphic}
+joinedirrigated_nonirrigated2<- joinedirrigated_nonirrigated %>%
+select(-Data.Item)
+```
+```{r graphic}
+write.csv(joinedirrigated_nonirrigated2, 'Irrigated_NonIrrigatedValue.csv',row.names = FALSE)
+```
+
+Links to flourish graphics: https://public.flourish.studio/visualisation/22815503/
+https://public.flourish.studio/visualisation/22815322/
