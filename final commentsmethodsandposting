@@ -50,6 +50,8 @@ fertilized and help stimulate crop growth. Below is code I used to look at irrig
 Kansas to look the difference irrigation can make in crop production. Data was downloaded from the same website, with those two filters
 applied to each of them, creating two different graphs. First, my imports and code for the Irrigated graph.
 
+
+
 ```{r}
 finaldf3 <- read.csv('data/234EE2BB-6CD0-3B1C-ACC9-0025E3AAAAF7.csv', header=TRUE)
 ```
@@ -150,3 +152,22 @@ write.csv(joinedirrigated_nonirrigated2, 'Irrigated_NonIrrigatedValue.csv',row.n
 
 Links to flourish graphics: https://public.flourish.studio/visualisation/22815503/
 https://public.flourish.studio/visualisation/22815322/
+
+Methodology
+
+The full methodology document for data analysis in this story can be found here. 
+
+Datasets Used
+
+The United States Department of Agriculture is a government agency responsible for overseeing and implementing various policies related to agriculture and forestry. This agency helps farmers and promotes food safety similar to the FDA, while also trying to promote agricultural trade between nations. The USDA has several divisions, including the food safety and inspection (FSIS), food assistance and nutrition, rural development and more.
+The United States Drought Monitor collects drought information throughout the country to see how it affects farmers and the government alike. 
+
+Limitations of data used for this story
+
+When I was analyzing my drought data I had realized some years were not accounted for, but more than enough data was available so it didn’t take away from the trend I was seeing in the data.
+I reached out to 3 three potential interviewees 2 months ago, but only Daniel came thankfully, but he definitely helped me add an interesting angle to my presentation. 
+
+
+AI Disclosure
+
+AI, Artificial Intelligence, was used in this story to help with one or two lines of code in my final R project notebook. All other coding, analysis and information was completed by a human and used regular reporting methods. My outside source was not put into any AI editing software. 
